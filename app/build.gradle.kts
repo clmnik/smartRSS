@@ -1,12 +1,15 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.android.application)       // <-- nutzt "com.android.application" aus libs.versions.toml
+    alias(libs.plugins.kotlin.android)            // <-- nutzt "org.jetbrains.kotlin.android"
+    // alias(libs.plugins.kotlin.compose)         // NUR falls du wirklich ein extra Compose-Plugin brauchst,
+    // ansonsten reicht "kotlin.android".
+    // Falls du ROOM-Annotation-Processor brauchst:
+    // id("kotlin-kapt")
 }
 
 android {
-    namespace = "com.example.smartrss"
-    compileSdk = 34
+    namespace = "com.example.smartrss"        // Passe an, wenn du willst
+    compileSdk = 34                           // Stelle sicher, dass du das SDK 34 in Android Studio installiert hast
 
     defaultConfig {
         applicationId = "com.example.smartrss"
@@ -15,45 +18,64 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Falls du Room nutzt und KAPT brauchst:
+        // javaCompileOptions {
+        //     annotationProcessorOptions {
+        //         arguments["room.schemaLocation"] = "$projectDir/schemas"
+        //     }
+        // }
+    }
+
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        // Hier muss die Kotlin-Compiler-Extension-Version zur Compose-Version passen (siehe libs.versions.toml).
+        kotlinCompilerExtensionVersion = "1.5.0"   // oder die Compose-Compiler-Version, die zu deinem Compose passt
     }
 
     buildTypes {
         release {
+            // Obfuscation, minifyEnabled etc., erstmal egal:
             isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            // proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-    buildFeatures {
-        compose = true
+        debug {
+            // debug stuff
+        }
     }
 }
 
 dependencies {
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
+    // ============= JETPACK COMPOSE =============
     implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
+    implementation(libs.androidx.ui.tooling.preview)
     debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
+
+    // ============= NAVIGATION (optional, falls du Compose Navigation brauchst) =============
+    // Wenn du Compose Navigation verwendest, kannst du das auch so definieren:
+    // implementation("androidx.navigation:navigation-compose:2.6.0")
+
+    // ============= RETROFIT (Networking) =============
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)  // damit Retrofit JSON via Gson parsen kann
+
+    // ============= OKHTTP (Low-level HTTP client) =============
+    implementation(libs.okhttp)
+
+    // ============= COIL (Bilder laden in Compose) =============
+    implementation(libs.coil.compose)
+
+    // ============= ROME (RSS-Parsing) =============
+    implementation(libs.rome)
+
+    // ============= ROOM (Optional, falls später benötigt) =============
+    // implementation(libs.room.runtime)
+    // kapt(libs.room.compiler)
+    // implementation(libs.room.ktx)
+
+    // ============= KOTLIN COROUTINES =============
+    implementation(libs.coroutines.android)
 }
+
